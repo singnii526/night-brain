@@ -3,64 +3,95 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#08060d">
+<meta name="theme-color" content="#080808">
 <meta name="description" content="잠이 오지 않는 밤을 위한 뇌파 사운드 · 호흡 가이드 · 이완 유도 · 수면 일지">
 <title>나이트 브레인</title>
 <style>
+  /* 3안 '고요한 한 장' — 흑백 월식. 앰버는 작은 상태 표시에만 쓴다 */
   :root{
-    --bg:#08060d;
-    --card:rgba(255,255,255,.045);
-    --card-br:rgba(255,255,255,.09);
-    --tx:#e9e2d8;
-    --tx-dim:#9a9188;
-    --tx-faint:#6b645e;
-    --amber:#e8a34a;
-    --amber-soft:rgba(232,163,74,.14);
-    --violet:#8e7ad6;
+    --bg:#080808;
+    --card:rgba(255,255,255,.028);
+    --card-br:rgba(255,255,255,.075);
+    --tx:#c8c0b5;
+    --tx-dim:#8f8880;
+    --tx-faint:#6f6962;
+    --amber:#b98a55;
+    --amber-soft:rgba(185,138,85,.13);
+    --violet:#9d97a8;
     --r:18px;
+    --serif:"Nanum Myeongjo","Batang","AppleMyungjo",Georgia,serif;
+    --safe-t:env(safe-area-inset-top,0px);
     --safe-b:env(safe-area-inset-bottom,0px);
+    --dock-h:190px;
+    --ease:cubic-bezier(.22,.61,.36,1);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;padding:0}
+  html,body{margin:0;padding:0;height:100%}
+  html{background:var(--bg);touch-action:manipulation}
   body{
-    background:
-      radial-gradient(120% 70% at 50% -10%, #1b1226 0%, rgba(27,18,38,0) 60%),
-      radial-gradient(90% 60% at 10% 110%, #0e1420 0%, rgba(14,20,32,0) 55%),
-      var(--bg);
-    min-height:100vh;
+    background:var(--bg);
+    overflow:hidden;
     color:var(--tx);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
     font-size:15px;line-height:1.6;
     -webkit-font-smoothing:antialiased;
-    transition:opacity .8s ease, filter .8s ease;
   }
-  body.dim{opacity:.06;filter:saturate(.3)}
-  .wrap{max-width:560px;margin:0 auto;padding:22px 16px calc(96px + var(--safe-b))}
+  button{touch-action:manipulation;-webkit-user-select:none;user-select:none}
 
-  /* ── 헤더 ─────────────────────────── */
-  header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:18px}
-  .brand{display:flex;flex-direction:column;gap:2px}
-  .brand h1{margin:0;font-size:19px;font-weight:650;letter-spacing:-.3px}
-  .brand small{color:var(--tx-faint);font-size:11.5px;letter-spacing:.2px}
-  .moon{width:34px;height:34px;flex:0 0 auto}
-  .clock{text-align:right;color:var(--tx-dim);font-size:12px;line-height:1.3}
-  .clock b{display:block;font-size:20px;color:var(--tx);font-weight:600;font-variant-numeric:tabular-nums}
+  /* ── 홈: 현재 선택과 시작만 ─────────── */
+  .home{
+    position:fixed;inset:0;
+    display:flex;flex-direction:column;
+    padding:calc(18px + var(--safe-t)) 22px var(--dock-h);
+    background:radial-gradient(ellipse 70% 45% at 50% 40%,rgba(120,118,122,.05),transparent 70%),var(--bg);
+  }
+  .hbrand{display:flex;align-items:center;gap:8px;font-size:13px;color:#77726d;max-width:560px;width:100%;margin:0 auto}
+  .hbrand svg{width:17px;height:17px;color:#8b8682;flex:0 0 auto}
+  .hmid{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center}
+  .eclipse{width:clamp(130px,26vh,200px);aspect-ratio:1;margin-bottom:clamp(6px,3vh,22px);flex:0 0 auto}
+  .eclipse svg{width:100%;height:100%;display:block;overflow:visible}
+  .htitle{margin:0;font-family:var(--serif);font-weight:400;font-size:clamp(24px,7.4vw,30px);letter-spacing:-1px;line-height:1.3;color:#cdc5ba}
+  .hsub{font-size:13px;color:#8a847d}
+  .hmore{appearance:none;background:none;border:0;font:inherit;font-size:13px;color:#8a847d;min-height:44px;padding:0 12px;margin-top:2px;cursor:pointer}
+  .hmore span{border-bottom:1px solid #36332f;padding-bottom:2px}
+  .hfirst{font-size:12px;color:#6f6962}
+  .hlive{display:none;margin-top:10px;font-size:13px;color:#948d85;line-height:1.95;font-variant-numeric:tabular-nums}
+  .hlive b{color:#b8aa98;font-weight:500}
+  body.running .hmore,body.running .hfirst{display:none}
+  body.running .hlive{display:block}
+
+  /* ── 메뉴: 기존 5개 탭은 여기서 펼친다 ── */
+  .menu{
+    position:fixed;inset:0;z-index:30;background:var(--bg);
+    display:flex;flex-direction:column;
+    transform:translateY(100%);visibility:hidden;
+    transition:transform .38s var(--ease),visibility 0s linear .38s;
+  }
+  body.menu-open .menu{transform:none;visibility:visible;transition:transform .38s var(--ease),visibility 0s}
+  .mhead{flex:0 0 auto;display:flex;align-items:center;gap:8px;width:100%;max-width:560px;margin:0 auto;padding:calc(12px + var(--safe-t)) 16px 10px}
+  .mclose{
+    appearance:none;cursor:pointer;flex:0 0 auto;width:44px;height:44px;border-radius:50%;
+    border:1px solid var(--card-br);background:rgba(255,255,255,.03);color:var(--tx-dim);
+    font-size:22px;line-height:1;display:grid;place-items:center;
+  }
+  .mbody{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  .wrap{max-width:560px;margin:0 auto;padding:6px 16px calc(var(--dock-h) + 12px)}
 
   /* ── 탭 ───────────────────────────── */
   nav{
-    display:flex;gap:4px;padding:4px;margin-bottom:16px;
-    background:rgba(255,255,255,.04);border:1px solid var(--card-br);border-radius:14px;
+    flex:1;min-width:0;display:flex;gap:3px;padding:3px;
+    background:rgba(255,255,255,.035);border:1px solid var(--card-br);border-radius:14px;
   }
   nav button{
-    flex:1;appearance:none;border:0;background:transparent;color:var(--tx-dim);
-    font:inherit;font-size:13px;padding:9px 2px;border-radius:10px;cursor:pointer;
+    flex:1;min-width:0;appearance:none;border:0;background:transparent;color:var(--tx-dim);
+    font:inherit;font-size:13px;min-height:40px;padding:0 2px;border-radius:11px;cursor:pointer;
     transition:.22s;white-space:nowrap;
   }
   nav button[aria-selected="true"]{background:var(--amber-soft);color:var(--amber);font-weight:600}
 
-  .panel{display:none;animation:fade .35s ease}
+  .panel{display:none;animation:fade .3s ease}
   .panel.on{display:block}
-  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
 
   .card{
     background:var(--card);border:1px solid var(--card-br);border-radius:var(--r);
@@ -81,7 +112,15 @@
   .preset[aria-pressed="true"]{border-color:rgba(232,163,74,.55);background:var(--amber-soft)}
   .preset .pt{display:block;font-size:13.5px;font-weight:600;margin-bottom:2px}
   .preset .pb{display:block;font-size:11px;color:var(--amber);letter-spacing:.3px}
-  .preset .pd{display:block;font-size:10.5px;color:var(--tx-faint);margin-top:5px;line-height:1.45}
+  .preset .pd{display:block;font-size:11.5px;color:var(--tx-faint);margin-top:5px;line-height:1.45}
+  .dayp{margin-top:8px}
+  .dayp summary{
+    cursor:pointer;list-style:none;display:flex;align-items:center;gap:7px;
+    min-height:44px;font-size:12.5px;color:var(--tx-dim);
+  }
+  .dayp summary::-webkit-details-marker{display:none}
+  .dayp summary::before{content:"›";font-size:17px;line-height:1;transition:transform .2s}
+  .dayp[open] summary::before{transform:rotate(90deg)}
 
   /* ── 슬라이더 ─────────────────────── */
   .sl{margin:14px 0 2px}
@@ -93,10 +132,10 @@
   }
   input[type=range]::-webkit-slider-thumb{
     -webkit-appearance:none;width:20px;height:20px;border-radius:50%;
-    background:var(--amber);border:3px solid #14101c;box-shadow:0 0 0 1px rgba(232,163,74,.4);cursor:pointer;
+    background:var(--amber);border:3px solid #0d0d0d;box-shadow:0 0 0 1px rgba(185,138,85,.4);cursor:pointer;
   }
   input[type=range]::-moz-range-thumb{
-    width:16px;height:16px;border-radius:50%;background:var(--amber);border:3px solid #14101c;cursor:pointer;
+    width:16px;height:16px;border-radius:50%;background:var(--amber);border:3px solid #0d0d0d;cursor:pointer;
   }
 
   /* ── 세그먼트 ─────────────────────── */
@@ -123,39 +162,67 @@
   .toggle[aria-pressed="true"]{background:rgba(232,163,74,.45)}
   .toggle[aria-pressed="true"]::after{left:21px;background:var(--amber)}
 
-  /* ── 재생 바 ──────────────────────── */
+  /* ── 하단 독: 위치 고정, 같은 자리가 시작 ↔ 전체 정지 ── */
   .dock{
     position:fixed;left:0;right:0;bottom:0;z-index:40;
-    padding:10px 16px calc(12px + var(--safe-b));
-    background:linear-gradient(to top,rgba(8,6,13,.97) 40%,rgba(8,6,13,0));
-    backdrop-filter:blur(10px);
+    padding:16px 16px calc(6px + var(--safe-b));
+    background:linear-gradient(to top,rgba(8,8,8,.98) 64%,rgba(8,8,8,0));
   }
-  .dock-in{max-width:560px;margin:0 auto;display:flex;align-items:center;gap:12px}
-  .play{
-    appearance:none;cursor:pointer;flex:0 0 auto;width:60px;height:60px;border-radius:50%;border:0;
-    background:var(--amber);color:#1a1207;display:grid;place-items:center;
-    box-shadow:0 6px 26px rgba(232,163,74,.3);transition:.2s;
+  .dock-in{max-width:560px;margin:0 auto}
+  .trio{display:flex;gap:8px;margin-bottom:12px}
+  .trio button{
+    flex:1;min-width:0;min-height:48px;appearance:none;cursor:pointer;
+    font:inherit;font-size:13px;color:#a19a92;white-space:nowrap;
+    border-radius:14px;border:1px solid rgba(166,163,161,.11);
+    background:linear-gradient(145deg,rgba(93,91,90,.06),transparent);
   }
-  .play:active{transform:scale(.94)}
-  .play.on{background:rgba(255,255,255,.1);color:var(--tx);box-shadow:none}
-  .play svg{width:24px;height:24px}
-  .dock-info{flex:1;min-width:0}
-  .dock-info .t1{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .dock-info .t2{font-size:11.5px;color:var(--tx-faint);font-variant-numeric:tabular-nums}
+  body.running .trio,body.menu-open .trio{display:none}
+  .bigbtn{
+    width:100%;min-height:64px;appearance:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    font:inherit;font-size:17px;font-weight:600;letter-spacing:.2px;color:#cfc8bf;
+    border-radius:18px;border:1px solid transparent;
+    background:
+      linear-gradient(110deg,#1b1b1c,#111112) padding-box,
+      linear-gradient(110deg,rgba(165,163,162,.32),rgba(106,104,104,.12),rgba(165,163,162,.22)) border-box;
+    transition:transform .15s;
+  }
+  .bigbtn:active{transform:scale(.985)}
+  .bigbtn svg{width:14px;height:14px;flex:0 0 auto}
+  body.running .bigbtn{background:#0f0f10;border-color:rgba(165,163,162,.2);color:#aaa49d}
+  .dfoot{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+  .dfoot button{
+    appearance:none;background:none;border:0;cursor:pointer;font:inherit;font-size:13px;color:#7b756f;
+    min-height:44px;min-width:44px;padding:0 6px;display:flex;align-items:center;gap:7px;
+  }
+  .dfoot svg{width:15px;height:15px;flex:0 0 auto}
+  .st1{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .st2{font-size:12px;color:var(--tx-faint);font-variant-numeric:tabular-nums}
   .bar{height:3px;border-radius:99px;background:rgba(255,255,255,.1);margin-top:7px;overflow:hidden}
   .bar > i{display:block;height:100%;width:0;background:var(--amber);transition:width 1s linear}
-  .dimbtn{
-    appearance:none;cursor:pointer;flex:0 0 auto;width:44px;height:44px;border-radius:50%;
-    background:rgba(255,255,255,.05);border:1px solid var(--card-br);color:var(--tx-dim);
-    display:grid;place-items:center;font-size:17px;
+
+  /* ── 어둠 레이어: 덮는 동안 아래 버튼으로 터치가 새지 않는다 ── */
+  .veil{
+    position:fixed;inset:0;z-index:60;background:#000;
+    opacity:0;pointer-events:none;transition:opacity .8s ease;
+    display:flex;flex-direction:column;justify-content:flex-end;
+    padding:0 16px calc(54px + var(--safe-b));   /* 독의 큰 버튼과 같은 높이에 정지 영역 */
+  }
+  body.dark .veil{opacity:1;pointer-events:auto}   /* 완전히 덮어 아래 글자가 비치지 않게 */
+  .veil-in{width:100%;max-width:560px;margin:0 auto}
+  .vhint{text-align:center;font-size:12px;color:#2b2826;margin-bottom:14px}
+  .stopzone{
+    display:block;width:100%;min-height:64px;appearance:none;cursor:pointer;
+    border-radius:18px;border:1px solid #1b1918;background:transparent;
+    color:#34302d;font:inherit;font-size:15px;
   }
 
   /* ── 호흡 ─────────────────────────── */
   .breath{position:relative;height:270px;display:grid;place-items:center;margin:6px 0 2px}
   .bcircle{
     position:absolute;width:180px;height:180px;border-radius:50%;
-    background:radial-gradient(circle at 50% 40%,rgba(142,122,214,.5),rgba(142,122,214,.06) 70%);
-    border:1px solid rgba(142,122,214,.35);
+    background:radial-gradient(circle at 50% 40%,rgba(157,151,168,.34),rgba(157,151,168,.04) 70%);
+    border:1px solid rgba(157,151,168,.3);
     transform:scale(.55);will-change:transform;
   }
   .bring{position:absolute;width:216px;height:216px;border-radius:50%;border:1px dashed rgba(255,255,255,.09)}
@@ -177,7 +244,14 @@
     border-radius:11px;color:var(--tx);font:inherit;font-size:14px;padding:10px 11px;
   }
   textarea{resize:vertical;min-height:62px;font-size:13px}
-  input:focus,textarea:focus{outline:0;border-color:rgba(232,163,74,.5)}
+  select{
+    width:100%;background:rgba(255,255,255,.05);border:1px solid var(--card-br);
+    border-radius:11px;color:var(--tx);font:inherit;font-size:13px;padding:10px 10px;
+  }
+  input:focus,textarea:focus,select:focus{outline:0;border-color:rgba(232,163,74,.5)}
+  #voiceBox.off{display:none}
+  .vwarn{font-size:11.5px;color:#e8a34a;line-height:1.55;margin-top:10px}
+  .vwarn:empty{display:none}
   .stars{display:flex;gap:5px}
   .stars button{
     appearance:none;cursor:pointer;flex:1;background:rgba(255,255,255,.04);border:1px solid var(--card-br);
@@ -185,10 +259,10 @@
   }
   .stars button[aria-pressed="true"]{background:var(--amber-soft);border-color:rgba(232,163,74,.45)}
   .btn{
-    appearance:none;cursor:pointer;width:100%;font:inherit;font-size:14px;font-weight:600;
-    background:var(--amber);color:#1a1207;border:0;border-radius:13px;padding:13px;margin-top:14px;
+    appearance:none;cursor:pointer;width:100%;min-height:50px;font:inherit;font-size:15px;font-weight:600;
+    background:#16130f;color:#d4b38a;border:1px solid rgba(185,138,85,.35);border-radius:14px;padding:13px;margin-top:14px;
   }
-  .btn.ghost{background:rgba(255,255,255,.06);color:var(--tx);font-weight:500}
+  .btn.ghost{background:rgba(255,255,255,.04);color:var(--tx);border-color:var(--card-br);font-weight:500}
   .chart{display:flex;align-items:flex-end;gap:6px;height:110px;margin:4px 0 8px}
   .chart .col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px;height:100%}
   .chart .bx{width:100%;border-radius:6px 6px 3px 3px;background:linear-gradient(to top,rgba(232,163,74,.85),rgba(142,122,214,.7));min-height:3px}
@@ -212,42 +286,94 @@
   .info ul,.info ol{margin:0;padding-left:18px}
   .warn{border-color:rgba(232,120,74,.3);background:rgba(232,120,74,.06)}
   .warn h3{color:#e8784a}
-  .foot{font-size:11px;color:var(--tx-faint);text-align:center;padding:10px 0 0}
+  .foot{font-size:11.5px;color:var(--tx-faint);text-align:center;padding:10px 0 0}
+
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none!important;transition:none!important}
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-
-  <header>
-    <div style="display:flex;align-items:center;gap:11px">
-      <svg class="moon" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-        <path d="M27.5 25.5A13 13 0 0 1 14.5 8.2 14 14 0 1 0 31.8 29a13 13 0 0 1-4.3-3.5Z" fill="#e8a34a" opacity=".9"/>
-        <circle cx="30" cy="11" r="1.4" fill="#e9e2d8" opacity=".8"/>
-        <circle cx="34.5" cy="17" r="1" fill="#e9e2d8" opacity=".5"/>
-        <circle cx="25" cy="6" r=".8" fill="#e9e2d8" opacity=".5"/>
+<!-- ═══ 홈 — 고요한 한 장 ═══ -->
+<main class="home" id="home">
+  <div class="hbrand">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 15.2A8.4 8.4 0 0 1 8.8 4.5 8.5 8.5 0 1 0 19.5 15.2Z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+    나이트 브레인
+  </div>
+  <div class="hmid">
+    <div class="eclipse" id="hEclipse" aria-hidden="true">
+      <svg viewBox="0 0 220 220" fill="none">
+        <defs>
+          <linearGradient id="ec-rim" x1="25" y1="26" x2="180" y2="185" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#525255" stop-opacity=".12"/>
+            <stop offset=".37" stop-color="#858487" stop-opacity=".32"/>
+            <stop offset=".65" stop-color="#b7b4b2" stop-opacity=".72"/>
+            <stop offset="1" stop-color="#656466" stop-opacity=".14"/>
+          </linearGradient>
+          <radialGradient id="ec-corona">
+            <stop offset=".69" stop-color="#99979a" stop-opacity="0"/>
+            <stop offset=".79" stop-color="#99979a" stop-opacity=".065"/>
+            <stop offset=".84" stop-color="#99979a" stop-opacity=".025"/>
+            <stop offset="1" stop-color="#99979a" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="ec-body" cx=".34" cy=".24" r=".87">
+            <stop offset="0" stop-color="#111113"/>
+            <stop offset=".7" stop-color="#09090a"/>
+            <stop offset="1" stop-color="#070708"/>
+          </radialGradient>
+          <filter id="ec-soft" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2.4"/>
+          </filter>
+        </defs>
+        <circle cx="110" cy="110" r="102" fill="url(#ec-corona)"/>
+        <ellipse cx="110" cy="110" rx="105" ry="36" transform="rotate(-34 110 110)" stroke="#737277" stroke-opacity=".12" stroke-width=".7"/>
+        <circle cx="110" cy="110" r="73" stroke="url(#ec-rim)" stroke-width="4" filter="url(#ec-soft)" opacity=".42"/>
+        <circle cx="110" cy="110" r="72" fill="url(#ec-body)" stroke="url(#ec-rim)" stroke-width="1.25"/>
+        <path d="M160 59a72 72 0 0 1 1 101" stroke="#9f9c99" stroke-opacity=".31" stroke-width=".65"/>
+        <circle cx="188" cy="70" r="1" fill="#8f8b8a" opacity=".5"/>
+        <path d="M33 158h5m-2.5-2.5v5" stroke="#868384" stroke-opacity=".3" stroke-width=".6"/>
       </svg>
-      <div class="brand">
-        <h1>나이트 브레인</h1>
-        <small>뇌파 · 호흡 · 이완으로 잠의 스위치를 내립니다</small>
-      </div>
     </div>
-    <div class="clock"><b id="clk">--:--</b><span id="clkd">오늘</span></div>
-  </header>
+    <h1 class="htitle" id="hTitle">깊은 수면</h1>
+    <div class="hsub" id="hSub">델타 2.5 Hz · 깊은 바람 · 45분 · 이어폰</div>
+    <button class="hmore" id="hMore" type="button"><span>설정 보기</span></button>
+    <div class="hfirst" id="hFirst" hidden>메뉴에서 모든 기능을 사용할 수 있어요</div>
+    <div class="hlive" id="hLive"></div>
+  </div>
+</main>
 
-  <nav role="tablist">
-    <button role="tab" aria-selected="true"  data-tab="sound">사운드</button>
-    <button role="tab" aria-selected="false" data-tab="breath">호흡</button>
-    <button role="tab" aria-selected="false" data-tab="relax">이완</button>
-    <button role="tab" aria-selected="false" data-tab="log">일지</button>
-    <button role="tab" aria-selected="false" data-tab="info">안내</button>
-  </nav>
+<!-- ═══ 메뉴 — 기존 5개 탭 ═══ -->
+<div class="menu" id="menu" inert>
+  <div class="mhead">
+    <nav role="tablist">
+      <button role="tab" aria-selected="true"  data-tab="sound">사운드</button>
+      <button role="tab" aria-selected="false" data-tab="breath">호흡</button>
+      <button role="tab" aria-selected="false" data-tab="relax">이완</button>
+      <button role="tab" aria-selected="false" data-tab="log">일지</button>
+      <button role="tab" aria-selected="false" data-tab="info">안내</button>
+    </nav>
+    <button class="mclose" id="mClose" type="button" aria-label="메뉴 닫기">×</button>
+  </div>
+  <div class="mbody">
+<div class="wrap">
 
   <!-- ═══ 사운드 ═══ -->
   <section class="panel on" id="p-sound">
     <div class="card">
+      <div class="row">
+        <div style="min-width:0">
+          <div class="st1" id="sTitle">깊은 수면 · 델타 2.5Hz</div>
+          <div class="st2" id="sSub">정지 · 타이머 45분</div>
+        </div>
+        <button class="btn ghost" id="sBtn" type="button" style="width:auto;margin:0;padding:10px 20px;flex:0 0 auto">소리 시작</button>
+      </div>
+      <div class="bar" style="margin-top:12px"><i id="sBar"></i></div>
+    </div>
+
+    <div class="card">
       <h2>뇌파 프리셋</h2>
       <p class="hint">이어폰·헤드폰을 끼면 바이노럴 비트가 제대로 작동합니다. 스피커로 들을 땐 아래에서 <b>아이소크로닉</b>으로 바꿔주세요.</p>
-      <div class="presets" id="presets"></div>
+      <div id="presets"></div>
     </div>
 
     <div class="card">
@@ -345,6 +471,12 @@
         <div class="lb">전환 신호음<small>단계가 바뀔 때 아주 작은 소리로 알립니다.</small></div>
         <button class="toggle" id="tChime" aria-pressed="false" aria-label="전환 신호음"></button>
       </div>
+      <div class="sw">
+        <div class="lb">단계 음성 안내
+          <small>“들이쉬기 · 멈추기 · 내쉬기”를 말해 줍니다. 목소리와 속도는 <b>이완</b> 탭에서 고릅니다.</small>
+        </div>
+        <button class="toggle" id="tBVoice" aria-pressed="false" aria-label="단계 음성 안내"></button>
+      </div>
     </div>
   </section>
 
@@ -354,9 +486,28 @@
       <h2>점진적 근육 이완 · 바디 스캔</h2>
       <p class="hint">몸의 각 부위에 힘을 줬다가 놓으면 근육이 원래 기준선 아래로 떨어집니다. 생각을 멈추려 애쓰는 대신 주의를 몸에 묶어두는 방식입니다.</p>
       <div class="seg" id="segRelax">
-        <button data-scale="0.6">짧게 7분</button>
-        <button data-scale="1" aria-pressed="true">기본 12분</button>
-        <button data-scale="1.5">길게 18분</button>
+        <button data-scale="0.6">짧게</button>
+        <button data-scale="1" aria-pressed="true">기본</button>
+        <button data-scale="1.5">길게</button>
+      </div>
+
+      <div class="sw" style="margin-top:14px">
+        <div class="lb">음성 안내
+          <small>눈을 감고 있어도 되도록 각 단계를 소리로 읽어 줍니다. 화면은 보지 않아도 됩니다.</small>
+        </div>
+        <button class="toggle" id="tVoice" aria-pressed="true" aria-label="음성 안내"></button>
+      </div>
+      <div id="voiceBox">
+        <div class="fld" style="margin-top:2px">
+          <label>목소리</label>
+          <select id="selVoice"></select>
+        </div>
+        <div class="sl">
+          <label>말하기 속도 <b><span id="vRate">0.85</span>×</b></label>
+          <input type="range" id="rRate" min="0.5" max="1.2" step="0.05" value="0.85">
+        </div>
+        <button class="btn ghost" id="bTest" style="margin-top:10px">이 목소리로 들어보기</button>
+        <div class="vwarn" id="voiceWarn"></div>
       </div>
     </div>
     <div class="card">
@@ -421,8 +572,9 @@
         <li>불을 끄고 침대에 <b>누운 뒤</b> 시작합니다. 앉아서 들으면 효과가 반으로 줄어듭니다.</li>
         <li><b>호흡</b> 탭에서 4-7-8 호흡을 4~6회. 여기서 이미 졸리면 그대로 잠드세요.</li>
         <li><b>사운드</b> 탭에서 <i>잠들기</i> 또는 <i>깊은 수면</i> 프리셋 + 하강 모드 + 45분 타이머.</li>
-        <li>생각이 계속 돌면 <b>이완</b> 탭의 바디 스캔으로 주의를 몸으로 옮깁니다.</li>
-        <li>화면은 <b>🌙 버튼</b>으로 거의 검게 만들 수 있습니다. 아무 곳이나 누르면 돌아옵니다.</li>
+        <li>생각이 계속 돌면 <b>이완</b> 탭의 바디 스캔으로 주의를 몸으로 옮깁니다. <b>음성 안내</b>가 켜져 있으면 눈을 감고 소리만 따라가면 됩니다.</li>
+        <li>화면은 아래 <b>화면 어둡게</b>로 검게 덮을 수 있습니다. 큰 버튼 자리를 누르면 <b>전체 정지</b>, 다른 곳을 누르면 화면만 돌아옵니다.</li>
+        <li>아래 큰 버튼은 소리를 시작하고, 소리·호흡·이완 중 무엇이든 실행 중이면 <b>전체 정지</b>로 바뀝니다. 눈을 감고도 같은 자리만 누르면 됩니다.</li>
       </ol>
 
       <h3>뇌파 대역이 뜻하는 것</h3>
@@ -458,23 +610,49 @@
         <li>기상 후 <b>아침 햇빛 10분</b>이 그날 밤의 멜라토닌 시각을 정합니다.</li>
         <li>침실은 <b>어둡고 시원하게</b> (18–20℃).</li>
       </ul>
+
+      <h3>음성이 안 나올 때</h3>
+      <ul>
+        <li>음성은 기기에 이미 설치된 목소리를 씁니다. 한국어 목소리가 없으면 <b>이완</b> 탭에 안내가 나옵니다.<br>
+            Windows: 설정 → 시간 및 언어 → 음성 → 음성 추가.<br>
+            Android·iPhone: 설정 → 접근성 → 화면 읽기(TalkBack·VoiceOver) 음성 데이터.</li>
+        <li>iPhone은 <b>무음 스위치</b>가 켜져 있으면 소리가 안 날 수 있습니다.</li>
+        <li>휴대폰 화면이 꺼지면 브라우저가 음성을 멈출 수 있습니다. 화면은 <b>화면 어둡게</b>로 어둡게만 해두세요.</li>
+      </ul>
     </div>
-    <div class="foot">모든 기록은 이 기기 안에만 저장됩니다 · 스페이스바로 재생/정지</div>
+    <div class="foot">모든 기록은 이 기기 안에만 저장됩니다 · 스페이스바로 시작/전체 정지</div>
   </section>
 </div>
+  </div>
+</div>
 
-<!-- ═══ 재생 도크 ═══ -->
+<!-- ═══ 하단 독 ═══ -->
 <div class="dock">
   <div class="dock-in">
-    <button class="play" id="btnPlay" aria-label="재생">
-      <svg id="icPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg>
-    </button>
-    <div class="dock-info">
-      <div class="t1" id="dTitle">깊은 수면 · 델타 2.5Hz</div>
-      <div class="t2" id="dSub">정지 · 타이머 45분</div>
-      <div class="bar"><i id="dBar"></i></div>
+    <div class="trio">
+      <button type="button" data-go="sound">소리 선택</button>
+      <button type="button" data-go="breath">호흡</button>
+      <button type="button" data-go="relax">몸 이완</button>
     </div>
-    <button class="dimbtn" id="btnDim" aria-label="화면 어둡게" title="화면 어둡게">🌙</button>
+    <button class="bigbtn" id="btnPlay" type="button" aria-label="소리 시작"></button>
+    <div class="dfoot">
+      <button type="button" id="btnDim">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 15.2A8.4 8.4 0 0 1 8.8 4.5 8.5 8.5 0 1 0 19.5 15.2Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        화면 어둡게
+      </button>
+      <button type="button" id="btnMenu">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14M5 12h14M5 16h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <span>메뉴 열기</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 어둠 레이어 ═══ -->
+<div class="veil" id="veil" aria-hidden="true">
+  <div class="veil-in">
+    <div class="vhint">아무 곳이나 누르면 돌아옵니다</div>
+    <button class="stopzone" id="stopzone" type="button" tabindex="-1">전체 정지</button>
   </div>
 </div>
 
@@ -486,13 +664,15 @@ const $  = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
 const pad2 = n => String(n).padStart(2,'0');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 /* ── 상태 ───────────────────────────────── */
 const DEF = {
   preset:'delta', mode:'binaural', beat:2.5, carrier:110, toneVol:35,
   noise:'brown', noiseVol:30, noiseTone:1200,
   ramp:true, fade:true, timerMin:45,
-  breath:'478', chime:false, relaxScale:1
+  breath:'478', chime:false, bVoice:false,
+  relaxScale:1, voiceOn:true, voiceURI:'', voiceRate:0.85
 };
 function load(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } }
 function save(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
@@ -531,12 +711,88 @@ function ensureCtx(){
   master = actx.createGain();
   master.gain.value = 0.0001;
   master.connect(actx.destination);
+  noiseReady = loadNoiseWorklet();
 }
 
+/* ── 배경 소리 생성기 ──────────────────────
+   예전엔 6초 버퍼를 반복 재생해서 5.95초마다 똑같은 소리가 되풀이되고,
+   이음새에서 음량이 순간 62~78%로 꺼졌다 → '뚝뚝 끊기는' 느낌.
+   이제는 오디오 스레드(AudioWorklet)에서 샘플을 계속 새로 만들어 반복 자체가 없다.
+   화면이 꺼져 메인 스레드가 느려져도 오디오 스레드는 영향받지 않는다. */
+const NOISE_WORKLET = `
+class NBNoise extends AudioWorkletProcessor {
+  constructor(o){
+    super();
+    this.type  = (o && o.processorOptions && o.processorOptions.type) || 'brown';
+    this.alive = true;
+    this.st    = [];
+    this.port.onmessage = e => { if(e.data === 'stop') this.alive = false; };
+  }
+  process(inputs, outputs){
+    if(!this.alive) return false;
+    const out = outputs[0], type = this.type;
+    for(let c = 0; c < out.length; c++){
+      const d = out[c];
+      const s = this.st[c] || (this.st[c] = {b0:0,b1:0,b2:0,b3:0,b4:0,b5:0,b6:0,last:0});
+      for(let i = 0; i < d.length; i++){
+        const w = Math.random()*2 - 1;
+        if(type === 'white'){
+          d[i] = w*0.45;
+        } else if(type === 'pink'){
+          s.b0=0.99886*s.b0+w*0.0555179; s.b1=0.99332*s.b1+w*0.0750759;
+          s.b2=0.96900*s.b2+w*0.1538520; s.b3=0.86650*s.b3+w*0.3104856;
+          s.b4=0.55000*s.b4+w*0.5329522; s.b5=-0.7616*s.b5-w*0.0168980;
+          d[i]=(s.b0+s.b1+s.b2+s.b3+s.b4+s.b5+s.b6+w*0.5362)*0.10;
+          s.b6=w*0.115926;
+        } else {
+          s.last=(s.last+0.02*w)/1.02; d[i]=s.last*3.0;
+        }
+      }
+    }
+    return true;
+  }
+}
+registerProcessor('nb-noise', NBNoise);
+`;
+let noiseReady = Promise.resolve(false), noiseWorklet = false;
+/* data: URL 먼저 — 파일로 직접 열면(file://) blob: 모듈은 보안상 막히기 때문.
+   그래도 안 되면 blob:, 그것도 안 되면 긴 버퍼 폴백으로 간다. */
+function loadNoiseWorklet(){
+  if(!actx.audioWorklet || !window.AudioWorkletNode) return Promise.resolve(false);
+  const aw = actx.audioWorklet;
+  const ok = () => { noiseWorklet = true; return true; };
+  const viaBlob = () => {
+    let url;
+    try{ url = URL.createObjectURL(new Blob([NOISE_WORKLET], {type:'application/javascript'})); }
+    catch(e){ return false; }
+    return aw.addModule(url).then(ok, () => false)
+      .finally(() => { try{ URL.revokeObjectURL(url); }catch(e){} });
+  };
+  return aw.addModule('data:application/javascript;charset=utf-8,' + encodeURIComponent(NOISE_WORKLET))
+    .then(ok, viaBlob)
+    .catch(() => false);
+}
+
+function makeNoiseSource(type){
+  if(noiseWorklet){
+    try{
+      return new AudioWorkletNode(actx, 'nb-noise', {
+        numberOfInputs:0, numberOfOutputs:1, outputChannelCount:[2], processorOptions:{type}
+      });
+    }catch(e){}
+  }
+  const {buf, loopEnd} = makeNoiseBuffer(type);
+  const src = actx.createBufferSource();
+  src.buffer = buf; src.loop = true; src.loopStart = 0; src.loopEnd = loopEnd;
+  src.start();
+  return src;
+}
+
+/* AudioWorklet이 없는 오래된 브라우저용 — 30초 버퍼 + 1.5초 등전력 크로스페이드 */
 function makeNoiseBuffer(type){
   const sr = actx.sampleRate;
-  const len = Math.floor(sr * 6);
-  const xf  = Math.floor(sr * 0.05);
+  const len = Math.floor(sr * 30);
+  const xf  = Math.floor(sr * 1.5);
   const buf = actx.createBuffer(2, len, sr);
   for(let c=0;c<2;c++){
     const d = buf.getChannelData(c);
@@ -555,10 +811,10 @@ function makeNoiseBuffer(type){
         last=(last+0.02*w)/1.02; d[i]=last*3.0;
       }
     }
-    /* 루프 이음새 크로스페이드 — 6초마다 딸깍 소리 방지 */
+    /* 루프 이음새: 등전력(sin/cos) 크로스페이드 — 선형으로 섞으면 가운데서 음량이 3dB 꺼진다 */
     for(let i=0;i<xf;i++){
-      const t=i/xf;
-      d[i] = d[i]*t + d[len-xf+i]*(1-t);
+      const t = i/xf*Math.PI/2;
+      d[i] = d[i]*Math.sin(t) + d[len-xf+i]*Math.cos(t);
     }
   }
   return {buf, loopEnd:(len-xf)/sr};
@@ -577,8 +833,9 @@ function buildGraph(){
     const merger = actx.createChannelMerger(2);
     const a = actx.createOscillator(), b = actx.createOscillator();
     a.type = b.type = 'sine';
-    a.frequency.value = car - beat/2;
-    b.frequency.value = car + beat/2;
+    /* 하강 램프의 출발점을 명시 — 브라우저마다 출발 시각 해석이 달라 튀는 것을 막는다 */
+    a.frequency.setValueAtTime(car - beat/2, now);
+    b.frequency.setValueAtTime(car + beat/2, now);
     a.connect(merger, 0, 0);
     b.connect(merger, 0, 1);
     merger.connect(toneGain);
@@ -592,7 +849,7 @@ function buildGraph(){
     const osc = actx.createOscillator();
     osc.type='sine'; osc.frequency.value = car;
     const amp = actx.createGain(); amp.gain.value = 0.5;
-    const lfo = actx.createOscillator(); lfo.type='sine'; lfo.frequency.value = beat;
+    const lfo = actx.createOscillator(); lfo.type='sine'; lfo.frequency.setValueAtTime(beat, now);
     const lg  = actx.createGain(); lg.gain.value = 0.5;
     lfo.connect(lg); lg.connect(amp.gain);
     osc.connect(amp); amp.connect(toneGain);
@@ -602,9 +859,7 @@ function buildGraph(){
   }
 
   if(S.noise !== 'none'){
-    const {buf, loopEnd} = makeNoiseBuffer(S.noise);
-    const src = actx.createBufferSource();
-    src.buffer = buf; src.loop = true; src.loopStart = 0; src.loopEnd = loopEnd;
+    const src = makeNoiseSource(S.noise);
     noiseFilter = actx.createBiquadFilter();
     noiseFilter.type = 'lowpass';
     noiseFilter.frequency.value = S.noiseTone;
@@ -612,7 +867,6 @@ function buildGraph(){
     noiseGain = actx.createGain();
     noiseGain.gain.value = (S.noiseVol/100)*0.6;
     src.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(master);
-    src.start();
     nodes.push(src);
   } else {
     noiseGain = null; noiseFilter = null;
@@ -622,31 +876,37 @@ function buildGraph(){
   rampTo = ramping ? RAMP_TARGET : beat;
 }
 
+let startSeq = 0;
 function start(){
   ensureCtx();
-  if(actx.state === 'suspended') actx.resume();
+  if(actx.state === 'suspended') actx.resume();   /* 터치 안에서 — iOS 오디오 잠금 해제 */
   clearTimers();
   killNodes(0);
-  nodes = [];
-  sessionDur = S.timerMin > 0 ? S.timerMin*60 : 0;
-  buildGraph();
-
-  const now = actx.currentTime;
-  master.gain.cancelScheduledValues(now);
-  master.gain.setValueAtTime(0.0001, now);
-  master.gain.linearRampToValueAtTime(1, now + 4);      /* 4초 페이드 인 */
-
+  const seq = ++startSeq;
   playing = true;
+  sessionDur = S.timerMin > 0 ? S.timerMin*60 : 0;
   sessionStart = Date.now();
+  syncDock();
+  /* 생성기 모듈은 처음 한 번만 로드된다 — 그동안 정지·재시작되면 이 회차는 버린다 */
+  noiseReady.then(() => { if(seq === startSeq && playing) begin(); });
+}
 
+function begin(){
+  buildGraph();
+  const now = actx.currentTime, g = master.gain;
+  g.cancelScheduledValues(now);
+  g.setValueAtTime(0.0001, now);
+  g.linearRampToValueAtTime(1, now + 4);          /* 4초 페이드 인 */
   if(sessionDur > 0){
+    /* 페이드 아웃도 오디오 시계에 예약 — 화면이 꺼져 타이머가 늦어져도 제때 줄어든다 */
     const fadeSec = S.fade ? 60 : 2;
-    const fadeAt  = Math.max(1, sessionDur - fadeSec);
-    fadeTid = setTimeout(()=>fadeOut(fadeSec), fadeAt*1000);
+    const fadeAt  = Math.max(4, sessionDur - fadeSec);
+    g.setValueAtTime(1, now + fadeAt);
+    g.linearRampToValueAtTime(0.0001, now + sessionDur);
     stopTid = setTimeout(()=>finish(), (sessionDur+1)*1000);
   }
   tickId = setInterval(tick, 1000);
-  tick(); syncDock();
+  tick();
 }
 
 function fadeOut(sec){
@@ -661,7 +921,11 @@ function killNodes(delayMs){
   const dead = nodes.slice();
   nodes = [];
   if(!dead.length) return;
-  const reap = () => dead.forEach(n=>{ try{n.stop();}catch(e){} try{n.disconnect();}catch(e){} });
+  const reap = () => dead.forEach(n=>{
+    try{ if(n.port) n.port.postMessage('stop'); }catch(e){}   /* 생성기는 스스로 멈추게 */
+    try{ n.stop(); }catch(e){}
+    try{ n.disconnect(); }catch(e){}
+  });
   delayMs > 0 ? setTimeout(reap, delayMs) : reap();
 }
 
@@ -670,7 +934,7 @@ function finish(){
   clearTimers();
   killNodes(200);
   playing = false;
-  $('#dBar').style.width = '0%';
+  $('#sBar').style.width = '0%';
   syncDock();
 }
 
@@ -681,7 +945,7 @@ function stop(){
   fadeOut(1.5);
   killNodes(1700);
   playing = false;
-  $('#dBar').style.width = '0%';
+  $('#sBar').style.width = '0%';
   syncDock();
 }
 
@@ -704,11 +968,11 @@ function tick(){
   const el = (Date.now() - sessionStart)/1000;
   if(sessionDur > 0){
     const left = Math.max(0, sessionDur - el);
-    $('#dBar').style.width = clamp(el/sessionDur*100, 0, 100).toFixed(2)+'%';
+    $('#sBar').style.width = clamp(el/sessionDur*100, 0, 100).toFixed(2)+'%';
     const cur = rampFrom + (rampTo - rampFrom)*clamp(el/sessionDur, 0, 1);
-    $('#dSub').textContent = `재생 중 · 남은 ${Math.floor(left/60)}:${pad2(Math.floor(left%60))} · ${cur.toFixed(1)}Hz`;
+    $('#sSub').textContent = `재생 중 · 남은 ${Math.floor(left/60)}:${pad2(Math.floor(left%60))} · ${cur.toFixed(1)}Hz`;
   } else {
-    $('#dSub').textContent = `재생 중 · ${Math.floor(el/60)}:${pad2(Math.floor(el%60))} · ${S.beat.toFixed(1)}Hz`;
+    $('#sSub').textContent = `재생 중 · ${Math.floor(el/60)}:${pad2(Math.floor(el%60))} · ${S.beat.toFixed(1)}Hz`;
   }
 }
 
@@ -722,13 +986,23 @@ function liveUpdate(){
 }
 
 /* ── UI: 프리셋 ─────────────────────────── */
+/* 밤에 쓰는 4종만 펼쳐 두고, 각성용(베타·감마)은 접어 둔다 */
+const DAY_PRESETS = ['beta','gamma'];
 function renderPresets(){
-  $('#presets').innerHTML = PRESETS.map(p => `
+  const card = p => `
     <button class="preset" data-p="${p.id}" aria-pressed="${S.preset===p.id}">
       <span class="pt">${p.name}</span>
       <span class="pb">${p.band}</span>
       <span class="pd">${p.desc}</span>
-    </button>`).join('');
+    </button>`;
+  const night = PRESETS.filter(p => !DAY_PRESETS.includes(p.id));
+  const day   = PRESETS.filter(p =>  DAY_PRESETS.includes(p.id));
+  $('#presets').innerHTML =
+    `<div class="presets">${night.map(card).join('')}</div>
+     <details class="dayp"${DAY_PRESETS.includes(S.preset) ? ' open' : ''}>
+       <summary>낮에 쓰는 프리셋 · 밤에는 쓰지 마세요</summary>
+       <div class="presets">${day.map(card).join('')}</div>
+     </details>`;
   $$('#presets .preset').forEach(b => b.onclick = () => {
     const p = presetById(b.dataset.p);
     S.preset = p.id; S.beat = p.beat; S.carrier = p.carrier; S.noise = p.noise;
@@ -750,20 +1024,68 @@ function syncControls(){
   $('#tChime').setAttribute('aria-pressed', !!S.chime);
 }
 
+const NOISE_NAME = {brown:'깊은 바람', pink:'비 소리', white:'백색 소음', none:'배경 없음'};
+
+/* 사운드 설정 → 홈 요약 · 사운드 탭 상태 */
 function syncDock(){
   const p = presetById(S.preset);
   const match = p && Math.abs(p.beat - S.beat) < 0.05 && p.carrier === S.carrier;
-  $('#dTitle').textContent = (match ? `${p.name} · ${p.band}` : `직접 설정 · ${S.beat.toFixed(1)}Hz`)
-                           + (S.mode === 'isochronic' ? ' · 아이소크로닉' : '');
-  $('#btnPlay').classList.toggle('on', playing);
-  $('#icPlay').innerHTML = playing
-    ? '<rect x="7" y="6" width="3.6" height="12" rx="1.2"/><rect x="13.4" y="6" width="3.6" height="12" rx="1.2"/>'
-    : '<path d="M8 5.5v13l11-6.5-11-6.5Z"/>';
-  $('#btnPlay').setAttribute('aria-label', playing ? '정지' : '재생');
+  const title = match ? p.name : '직접 설정';
+  const band  = match ? p.band : `${S.beat.toFixed(1)} Hz`;
+  $('#sTitle').textContent = `${title} · ${band}` + (S.mode === 'isochronic' ? ' · 아이소크로닉' : '');
+  $('#hTitle').textContent = title;
+  $('#hSub').textContent = [
+    band, NOISE_NAME[S.noise] || '',
+    S.timerMin > 0 ? `${S.timerMin}분` : '끄지 않음',
+    S.mode === 'binaural' ? '이어폰' : '스피커'
+  ].join(' · ');
+  $('#sBtn').textContent = playing ? '소리 정지' : '소리 시작';
   if(!playing){
-    $('#dSub').textContent = '정지 · ' + (S.timerMin>0 ? `타이머 ${S.timerMin}분` : '타이머 없음')
+    $('#sSub').textContent = '정지 · ' + (S.timerMin>0 ? `타이머 ${S.timerMin}분` : '타이머 없음')
                            + (S.ramp && S.timerMin>0 ? ' · 하강' : '');
   }
+  syncRun();
+}
+
+/* ── 실행 상태 통합: 소리 · 호흡 · 이완 중 무엇이든 돌면 '전체 정지' ── */
+const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg>';
+const ICON_STOP = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="2"/></svg>';
+const fmtMS = s => `${Math.floor(s/60)}:${pad2(Math.floor(s%60))}`;
+const anyRunning = () => playing || bRun || rRun;
+let liveId = null;
+
+function syncRun(){
+  const on = anyRunning();
+  document.body.classList.toggle('running', on);
+  const b = $('#btnPlay');
+  /* 메뉴 안에서는 호흡·이완의 '시작'과 헷갈리지 않게 '소리 시작' */
+  const label = on ? '전체 정지' : (menuOpen ? '소리 시작' : '시작');
+  if(b.dataset.label !== label){
+    b.dataset.label = label;
+    b.innerHTML = (on ? ICON_STOP : ICON_PLAY) + `<span>${label}</span>`;
+    b.setAttribute('aria-label', on ? '전체 정지' : '소리 시작');
+  }
+  if(on && !liveId) liveId = setInterval(renderLive, 500);
+  if(!on && liveId){ clearInterval(liveId); liveId = null; }
+  renderLive();
+}
+function renderLive(){
+  const out = [];
+  if(playing){
+    const el = (Date.now() - sessionStart)/1000;
+    out.push(sessionDur > 0 ? `<b>소리</b> · 남은 ${fmtMS(Math.max(0, sessionDur - el))}`
+                            : `<b>소리</b> · ${fmtMS(el)} 재생 중`);
+  }
+  if(bRun) out.push(`<b>호흡</b> · ${esc($('#bPhase').textContent)} ${esc($('#bCount').textContent)}`);
+  if(rRun) out.push(`<b>이완</b> · ${esc($('#rMeta').textContent)}`);
+  $('#hLive').innerHTML = out.join('<br>');
+}
+function stopAll(){
+  stop();
+  if(bRun) bReset();
+  if(rRun) rReset();
+  cancelSpeech();
+  syncRun();
 }
 
 /* 컨트롤 바인딩 */
@@ -781,29 +1103,62 @@ $$('#segTimer button').forEach(b => b.onclick = () => { S.timerMin=+b.dataset.mi
 $('#tRamp').onclick  = () => { S.ramp=!S.ramp; persist(); syncControls(); syncDock(); restartSoft(); };
 $('#tFade').onclick  = () => { S.fade=!S.fade; persist(); syncControls(); };
 $('#tChime').onclick = () => { S.chime=!S.chime; persist(); syncControls(); };
-$('#btnPlay').onclick = () => { playing ? stop() : start(); };
+$('#btnPlay').onclick = () => { anyRunning() ? stopAll() : start(); };
+$('#sBtn').onclick    = () => { playing ? stop() : start(); };
 
-/* 화면 어둡게 */
-$('#btnDim').onclick = e => { e.stopPropagation(); document.body.classList.add('dim'); };
-document.addEventListener('click', () => {
-  if(document.body.classList.contains('dim')) document.body.classList.remove('dim');
-});
-
-/* ── 탭 ─────────────────────────────────── */
-$$('nav button').forEach(b => b.onclick = () => {
-  $$('nav button').forEach(x => x.setAttribute('aria-selected', x === b));
-  $$('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + b.dataset.tab));
-  if(b.dataset.tab === 'log') renderLog();
-});
-
-/* ── 시계 ───────────────────────────────── */
-function clock(){
-  const d = new Date();
-  const days = ['일','월','화','수','목','금','토'];
-  $('#clk').textContent  = `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
-  $('#clkd').textContent = `${d.getMonth()+1}월 ${d.getDate()}일 ${days[d.getDay()]}`;
+/* ── 화면 어둡게 — 별도 레이어가 덮으므로 아래 버튼이 같이 눌리지 않는다 ── */
+function setDark(on){
+  document.body.classList.toggle('dark', on);
+  $('#veil').setAttribute('aria-hidden', String(!on));
+  $('#stopzone').tabIndex = on ? 0 : -1;
 }
-clock(); setInterval(clock, 15000);
+$('#btnDim').onclick = () => setDark(true);
+$('#veil').onclick = e => {
+  e.stopPropagation();
+  if(e.target.closest('#stopzone')) stopAll();   /* 큰 버튼 자리 = 전체 정지 */
+  setDark(false);                                /* 나머지는 화면만 복귀 */
+};
+
+/* ── 메뉴 · 탭 ──────────────────────────── */
+let menuOpen = false;
+function selectTab(tab){
+  $$('nav button').forEach(x => x.setAttribute('aria-selected', x.dataset.tab === tab));
+  $$('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + tab));
+  if(tab === 'log') renderLog();
+  $('.mbody').scrollTop = 0;
+}
+function openMenu(tab){
+  if(tab) selectTab(tab);
+  if(menuOpen) return;
+  menuOpen = true;
+  document.body.classList.add('menu-open');
+  $('#menu').inert = false; $('#home').inert = true;
+  $('#btnMenu span').textContent = '메뉴 닫기';
+  $('#hFirst').hidden = true;
+  try{ localStorage.setItem('nb_seen', '1'); }catch(e){}
+  try{ history.pushState({nbMenu:1}, ''); }catch(e){}   /* 휴대폰 뒤로 가기 = 메뉴 닫기 */
+  syncRun();
+}
+function closeMenu(fromPop){
+  if(!menuOpen) return;
+  menuOpen = false;
+  document.body.classList.remove('menu-open');
+  $('#menu').inert = true; $('#home').inert = false;
+  $('#btnMenu span').textContent = '메뉴 열기';
+  syncRun();
+  if(!fromPop && history.state && history.state.nbMenu){ try{ history.back(); }catch(e){} }
+}
+window.addEventListener('popstate', () => { if(menuOpen) closeMenu(true); });
+$$('nav button').forEach(b => b.onclick = () => selectTab(b.dataset.tab));
+$('#btnMenu').onclick = () => { menuOpen ? closeMenu() : openMenu(); };
+$('#mClose').onclick  = () => closeMenu();
+$('#hMore').onclick   = () => openMenu('sound');
+$$('.trio button').forEach(b => b.onclick = () => openMenu(b.dataset.go));
+
+/* 독 높이만큼 홈·메뉴 아래 여백을 맞춘다 */
+const setDockH = () => document.documentElement.style.setProperty('--dock-h', $('.dock').offsetHeight + 'px');
+if(window.ResizeObserver) new ResizeObserver(setDockH).observe($('.dock'));
+window.addEventListener('resize', setDockH);
 
 /* ══════════════════════════════════════════
    호흡 가이드
@@ -820,7 +1175,7 @@ const BREATH = [
 ];
 const breathById = id => BREATH.find(b => b.id === id) || BREATH[0];
 const ease = t => t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2;
-let bRun=false, bIdx=0, bT0=0, bCycles=0, bRaf=null;
+let bRun=false, bIdx=0, bT0=0, bCycles=0, bRaf=null, bSaid=-1;
 
 function renderBreath(){
   $('#segBreath').innerHTML = BREATH.map(b =>
@@ -830,15 +1185,19 @@ function renderBreath(){
   });
 }
 function bReset(){
-  bRun=false; bIdx=0; bCycles=0;
+  const was = bRun;
+  bRun=false; bIdx=0; bCycles=0; bSaid=-1;
   if(bRaf) cancelAnimationFrame(bRaf);
   bRaf=null;
+  if(was) cancelSpeech();     /* 돌고 있지 않았으면 이완 음성을 끊지 않는다 */
   $('#bBtn').textContent = '시작';
   $('#bPhase').textContent = '준비';
   $('#bCount').textContent = '—';
   $('#bCycles').textContent = '0';
   $('#bCircle').style.transform = 'scale(.55)';
+  $('#hEclipse').style.transform = '';
   $('#bNote').textContent = breathById(S.breath).note;
+  syncRun();
 }
 function chime(freq){
   if(!S.chime) return;
@@ -855,10 +1214,12 @@ function chime(freq){
 }
 $('#bBtn').onclick = () => {
   if(bRun){ bReset(); return; }
-  bRun=true; bIdx=0; bCycles=0; bT0=performance.now();
+  if(rRun) rReset();          /* 음성 안내는 한 번에 하나 — 이완을 멈추고 호흡으로 */
+  bRun=true; bIdx=0; bCycles=0; bSaid=-1; bT0=performance.now();
   $('#bBtn').textContent = '정지';
   chime(660);
   bLoop();
+  syncRun();
 };
 function bLoop(){
   if(!bRun) return;
@@ -872,7 +1233,14 @@ function bLoop(){
   else if(name === '내쉬기')   scale = 1.00 - 0.45*ease(t);
   else                         scale = (bIdx > 0 && ph[bIdx-1][0] === '들이쉬기') ? 1.0 : 0.55;
 
+  if(bSaid !== bIdx){
+    bSaid = bIdx;
+    if(S.bVoice) speak(name, true);
+  }
+
   $('#bCircle').style.transform = `scale(${scale.toFixed(3)})`;
+  /* 홈의 월식도 숨에 맞춰 천천히 커졌다 작아진다 (0.55–1 → 0.86–1) */
+  $('#hEclipse').style.transform = `scale(${(0.86 + (scale - 0.55)/0.45*0.14).toFixed(3)})`;
   $('#bPhase').textContent = name;
   $('#bCount').textContent = Math.max(1, Math.ceil(dur - el));
   $('#bNote').textContent = name === '들이쉬기' ? '코로, 배가 부풀도록'
@@ -889,6 +1257,88 @@ function bLoop(){
     bT0 = performance.now();
   }
   bRaf = requestAnimationFrame(bLoop);
+}
+
+/* ══════════════════════════════════════════
+   음성 안내 (Web Speech API)
+   눈을 감고 쓰는 앱이라 화면 대신 소리로 읽어 준다.
+   ══════════════════════════════════════════ */
+const SYN = window.speechSynthesis || null;
+let VOICES = [];
+
+/* HTML 조각을 읽을 수 있는 평문으로 */
+const plain = h => String(h)
+  .replace(/<br\s*\/?>/gi, ' ')
+  .replace(/<[^>]+>/g, '')
+  .replace(/…/g, '.')
+  .replace(/\s+/g, ' ')
+  .trim();
+
+const voiceByURI = uri => VOICES.find(v => v.voiceURI === uri) || VOICES[0] || null;
+
+function speak(text, interrupt){
+  if(!SYN || !text) return;
+  const say = () => {
+    const u = new SpeechSynthesisUtterance(text);
+    const v = voiceByURI(S.voiceURI);
+    if(v){ u.voice = v; u.lang = v.lang; } else { u.lang = 'ko-KR'; }
+    u.rate = S.voiceRate;
+    u.pitch = 0.95;      /* 살짝 낮게 — 밤에 덜 날카롭게 */
+    u.volume = 1;
+    try{ SYN.speak(u); }catch(e){}
+  };
+  /* 이미 말하는 중이면 끊고 새로 — cancel 직후 speak은 크롬에서 씹히므로 살짝 미룬다 */
+  if(interrupt && (SYN.speaking || SYN.pending)){ SYN.cancel(); setTimeout(say, 90); }
+  else say();
+}
+function cancelSpeech(){ if(SYN){ try{ SYN.cancel(); }catch(e){} } }
+
+function loadVoices(){
+  const warn = $('#voiceWarn'), sel = $('#selVoice');
+  if(!SYN){
+    warn.textContent = '이 브라우저는 음성 안내를 지원하지 않습니다. 크롬이나 엣지에서 열어보세요.';
+    sel.innerHTML = '<option>사용 불가</option>'; sel.disabled = true;
+    return;
+  }
+  const all = SYN.getVoices();
+  if(!all.length){                              /* 아직 로딩 중 — onvoiceschanged 에서 다시 */
+    sel.innerHTML = '<option>목소리 불러오는 중…</option>';
+    return;
+  }
+  const ko = all.filter(v => /^ko/i.test(v.lang));
+  VOICES = ko.length ? ko : all;
+
+  if(!VOICES.some(v => v.voiceURI === S.voiceURI)){
+    S.voiceURI = VOICES[0].voiceURI;
+    persist();
+  }
+  sel.disabled = false;
+  sel.innerHTML = VOICES.map(v =>
+    `<option value="${esc(v.voiceURI)}"${v.voiceURI===S.voiceURI?' selected':''}>${esc(v.name)} · ${esc(v.lang)}</option>`
+  ).join('');
+  warn.textContent = ko.length ? ''
+    : '이 기기에 한국어 목소리가 없어 외국어 음성으로 읽습니다. Windows 설정 → 시간 및 언어 → 음성에서 한국어 음성을 추가하면 훨씬 자연스럽습니다.';
+}
+
+function syncVoiceUI(){
+  $('#tVoice').setAttribute('aria-pressed', !!S.voiceOn);
+  $('#tBVoice').setAttribute('aria-pressed', !!S.bVoice);
+  $('#voiceBox').classList.toggle('off', !S.voiceOn && !S.bVoice);
+  $('#rRate').value = S.voiceRate;
+  $('#vRate').textContent = S.voiceRate.toFixed(2);
+}
+
+$('#tVoice').onclick  = () => { S.voiceOn = !S.voiceOn; persist(); syncVoiceUI(); if(!S.voiceOn) cancelSpeech(); };
+$('#tBVoice').onclick = () => { S.bVoice = !S.bVoice; persist(); syncVoiceUI(); if(!S.bVoice) cancelSpeech(); };
+$('#selVoice').onchange = e => { S.voiceURI = e.target.value; persist(); speak('이 목소리로 안내할게요.', true); };
+$('#rRate').oninput  = e => { S.voiceRate = +e.target.value; $('#vRate').textContent = S.voiceRate.toFixed(2); persist(); };
+$('#rRate').onchange = () => speak('천천히, 이 속도로 읽어 드릴게요.', true);
+$('#bTest').onclick  = () => speak('편한 자세로 눕습니다. 눈을 감고, 아무것도 고치려 하지 마세요.', true);
+
+if(SYN){
+  loadVoices();
+  SYN.addEventListener ? SYN.addEventListener('voiceschanged', loadVoices) : (SYN.onvoiceschanged = loadVoices);
+  setTimeout(loadVoices, 300);   /* 일부 브라우저는 이벤트를 안 쏜다 */
 }
 
 /* ══════════════════════════════════════════
@@ -913,29 +1363,39 @@ const RELAX = [
   [35,'이제 아무것도 하지 않아도 됩니다.<br>잠은 노력해서 오는 것이 아니라<br>기다리면 오는 것입니다.'],
   [40,'좋은 밤 되세요. 🌙']
 ];
-let rRun=false, rIdx=0, rT0=0, rRaf=null, rTotal=0;
-const relaxTotal = () => RELAX.reduce((a,s)=>a+s[0], 0) * S.relaxScale;
+let rRun=false, rIdx=0, rT0=0, rRaf=null, rTotal=0, rSaid=-1;
+const RELAX_BASE = RELAX.reduce((a,s)=>a+s[0], 0);
+const relaxTotal = () => RELAX_BASE * S.relaxScale;
+const fmtDur = s => { s = Math.round(s); const m = Math.floor(s/60), r = s%60; return r ? `${m}분 ${r}초` : `${m}분`; };
+const RELAX_LABEL = {'0.6':'짧게', '1':'기본', '1.5':'길게'};
 
 function renderRelaxSeg(){
   $$('#segRelax button').forEach(b => {
+    /* 라벨은 실제 단계 합계에서 계산 — 4분 36초 / 7분 40초 / 11분 30초 */
+    b.textContent = `${RELAX_LABEL[b.dataset.scale]} ${fmtDur(RELAX_BASE * +b.dataset.scale)}`;
     b.setAttribute('aria-pressed', +b.dataset.scale === S.relaxScale);
     b.onclick = () => { S.relaxScale = +b.dataset.scale; persist(); renderRelaxSeg(); rReset(); };
   });
 }
 function rReset(){
-  rRun=false; rIdx=0;
+  const was = rRun;
+  rRun=false; rIdx=0; rSaid=-1;
   if(rRaf) cancelAnimationFrame(rRaf);
   rRaf=null;
+  if(was) cancelSpeech();
   $('#rBtn').textContent = '시작';
   $('#rStep').innerHTML = '준비가 되면 시작을 누르세요.<br>불은 끄고, 휴대폰은 뒤집어 두세요.';
-  $('#rMeta').textContent = `전체 ${Math.round(relaxTotal()/60)}분 · ${RELAX.length}단계`;
+  $('#rMeta').textContent = `전체 ${fmtDur(relaxTotal())} · ${RELAX.length}단계`;
   $('#rBar').style.width = '0%';
+  syncRun();
 }
 $('#rBtn').onclick = () => {
   if(rRun){ rReset(); return; }
-  rRun=true; rIdx=0; rT0=performance.now(); rTotal=relaxTotal();
+  if(bRun) bReset();           /* 음성 안내는 한 번에 하나 — 호흡을 멈추고 이완으로 */
+  rRun=true; rIdx=0; rSaid=-1; rT0=performance.now(); rTotal=relaxTotal();
   $('#rBtn').textContent = '정지';
-  rLoop();
+  rLoop();                     /* 첫 음성은 이 클릭 안에서 — iOS 음성 잠금 해제 */
+  syncRun();
 };
 function rLoop(){
   if(!rRun) return;
@@ -943,6 +1403,11 @@ function rLoop(){
   const el   = (performance.now() - rT0)/1000;
   const done = RELAX.slice(0, rIdx).reduce((a,s)=>a+s[0], 0) * S.relaxScale;
   const left = Math.max(0, rTotal - done - el);
+
+  if(rSaid !== rIdx){
+    rSaid = rIdx;
+    if(S.voiceOn) speak(plain(RELAX[rIdx][1]), true);
+  }
 
   $('#rStep').innerHTML = RELAX[rIdx][1];
   $('#rBar').style.width = clamp((done + Math.min(el,dur))/rTotal*100, 0, 100).toFixed(1)+'%';
@@ -956,6 +1421,7 @@ function rLoop(){
       $('#rStep').innerHTML = '끝났습니다. 그대로 누워 계세요. 🌙';
       $('#rBar').style.width = '100%';
       $('#rMeta').textContent = '완료';
+      syncRun();
       return;
     }
     rT0 = performance.now();
@@ -969,7 +1435,6 @@ function rLoop(){
 let LOG = load('nb_log', []);
 let fQual = 3;
 const FACE = ['😵','😕','😐','🙂','😄'];
-const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const hm  = m => `${Math.floor(m/60)}시간 ${Math.round(m%60)}분`;
 
 $$('#fQual button').forEach(b => b.onclick = () => {
@@ -1056,12 +1521,21 @@ function renderLog(){
 renderPresets(); syncControls(); syncDock();
 renderBreath();  bReset();
 renderRelaxSeg(); rReset();
+syncVoiceUI();
 renderLog();
+setDockH();
+try{ if(!localStorage.getItem('nb_seen')) $('#hFirst').hidden = false; }catch(e){}
 
 document.addEventListener('keydown', e => {
-  if(e.code === 'Space' && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)){
+  if(e.key === 'Escape'){
+    if(document.body.classList.contains('dark')) setDark(false);
+    else if(menuOpen) closeMenu();
+    return;
+  }
+  /* 버튼·입력칸에 포커스가 있으면 스페이스는 그 요소 몫 (두 번 눌림 방지) */
+  if(e.code === 'Space' && !/INPUT|TEXTAREA|SELECT|BUTTON|SUMMARY/.test(document.activeElement.tagName)){
     e.preventDefault();
-    playing ? stop() : start();
+    anyRunning() ? stopAll() : start();
   }
 });
 document.addEventListener('visibilitychange', () => {
